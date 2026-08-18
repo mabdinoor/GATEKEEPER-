@@ -1,0 +1,15 @@
+{
+  "name": "gatekeeper",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm start --prefix backend\" \"npm run dev --prefix frontend\"",
+    "build:frontend": "npm run build --prefix frontend",
+    "start:forever": "npm run build:frontend && pm2 start ecosystem.config.js",
+    "stop:forever": "pm2 stop ecosystem.config.js",
+    "logs:forever": "pm2 logs"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
