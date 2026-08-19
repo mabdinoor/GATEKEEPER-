@@ -2,6 +2,7 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext";
+import { apiRequest } from "../api/client";
 
 const C = {
   navy: "#0C1A2E", blue: "#378ADD", bluePale: "#E6F1FB", blueDark: "#185FA5",
@@ -37,12 +38,7 @@ function ForgotPassword({ onBack }) {
     if (!email) { setError("Email is required"); return; }
     setLoading(true);
     try {
-      const res = await fetch("/api/companies/forgot-password", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || "Something went wrong."); return; }
+      await apiRequest("/companies/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
       setSent(true);
     } catch { setError("Something went wrong."); }
     setLoading(false);
@@ -119,10 +115,7 @@ export default function CompanyAuthPage() {
 
   const handleResend = async () => {
     try {
-      await fetch("/api/companies/resend-verification", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: unverifiedEmail }),
-      });
+      await apiRequest("/companies/resend-verification", { method: "POST", body: JSON.stringify({ email: unverifiedEmail }) });
       setResendSent(true);
     } catch {}
   };

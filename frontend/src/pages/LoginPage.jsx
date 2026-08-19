@@ -2,6 +2,7 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext";
+import { apiRequest } from "../api/client";
 
 export default function LoginPage() {
   const { officerLogin } = useAuth();
@@ -16,8 +17,7 @@ export default function LoginPage() {
 
   // Fetch company list for the selector
   useEffect(() => {
-    fetch("/api/companies/list")
-      .then(r => r.json())
+    apiRequest("/companies/list")
       .then(d => setCompanies(d.companies || []))
       .catch(() => {});
   }, []);

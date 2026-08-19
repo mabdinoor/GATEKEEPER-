@@ -41,17 +41,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const companyLogin = async (email, password) => {
-    const res = await fetch("/api/companies/login", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      const err = new Error(data.error || "Login failed");
-      err.code = data.code;
-      err.email = data.email;
-      throw err;
-    }
+    const data = await api.companyLogin(email, password);
     localStorage.setItem("sg_company_token", data.token);
     setCompany(data.company);
     return data.company;

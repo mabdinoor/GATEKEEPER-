@@ -2,6 +2,7 @@ import ThemeToggle from "../components/ThemeToggle";
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../components/AuthContext";
+import { apiRequest } from "../api/client";
 
 export default function VerifyEmailPage() {
   const [params] = useSearchParams();
@@ -14,8 +15,7 @@ export default function VerifyEmailPage() {
     const token = params.get("token");
     if (!token) { setStatus("error"); setMessage("No verification token found."); return; }
 
-    fetch(`/api/companies/verify?token=${token}`)
-      .then(r => r.json())
+    apiRequest(`/companies/verify?token=${token}`)
       .then(data => {
         if (data.error) { setStatus("error"); setMessage(data.error); return; }
         localStorage.setItem("sg_company_token", data.token);

@@ -1,6 +1,7 @@
 import ThemeToggle from "../components/ThemeToggle";
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { apiRequest } from "../api/client";
 
 const inputStyle = (err) => ({
   width: "100%", height: 42,
@@ -26,13 +27,7 @@ export default function ResetPasswordPage() {
     if (password !== confirm) { setError("Passwords do not match"); return; }
     setLoading(true);
     try {
-      const res = await fetch("/api/companies/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
-      });
-      const data = await res.json();
-      if (data.error) { setError(data.error); return; }
+      await apiRequest("/companies/reset-password", { method: "POST", body: JSON.stringify({ token, password }) });
       setSuccess(true);
       setTimeout(() => navigate("/company"), 3000);
     } catch {

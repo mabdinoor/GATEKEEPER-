@@ -1,4 +1,4 @@
-const BASE = "/api";
+const BASE = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 function getOfficerToken() { return localStorage.getItem("sg_officer_token"); }
 function getCompanyToken() { return localStorage.getItem("sg_company_token"); }
 function getAdminToken() { return localStorage.getItem("sg_admin_token"); }
@@ -7,27 +7,37 @@ function authHeaders(type) {
   return t ? { Authorization: "Bearer " + t } : {};
 }
 
-async function request(path, options, tokenType) {
+export async function apiRequest(path, options, tokenType) {
   const res = await fetch(BASE + path, {
     ...options,
     headers: { "Content-Type": "application/json", ...authHeaders(tokenType || "officer"), ...(options?.headers || {}) },
   });
-  const data = await res.json();
-  if (!res.ok) { const err = new Error(data.error || "Request failed"); err.code = data.code; throw err; }
+
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+
+  if (!res.ok) {
+    const err = new Error((data && (data.error || data.message)) || "Request failed");
+    err.code = data && data.code;
+    throw err;
+  }
+
   return data;
 }
 
+const request = apiRequest;
+
 export const api = {
   // Company auth
-  companySignup:   (name, email, password, tosAccepted) => request("/companies/signup", { method: "POST", body: JSON.stringify({ name, email, password, tos_accepted: tosAccepted }) }, "company"),
-  companyLogin:    (email, password) => request("/companies/login", { method: "POST", body: JSON.stringify({ email, password }) }, "company"),
-  companyRegister: (data) => request("/companies/register", { method: "POST", body: JSON.stringify(data) }, "company"),
-  companyMe:       () => request("/companies/me", {}, "company"),
+  companySignup:   (name, email, password, tosAccepted) => apiRequest("/companies/signup", { method: "POST", body: JSON.stringify({ name, email, password, tos_accepted: tosAccepted }) }, "company"),
+  companyLogin:    (email, password) => apiRequest("/companies/login", { method: "POST", body: JSON.stringify({ email, password }) }, "company"),
+  companyRegister: (data) => apiRequest("/companies/register", { method: "POST", body: JSON.stringify(data) }, "company"),
+  companyMe:       () => apiRequest("/companies/me", {}, "company"),
 
   // Officers (company admin)
-  getOfficers:    () => request("/companies/officers", {}, "company"),
-  addOfficer:     (data) => request("/companies/officers", { method: "POST", body: JSON.stringify(data) }, "company"),
-  deleteOfficer:  (id) => request("/companies/officers/" + id, { method: "DELETE" }, "company"),
+  getOfficers:    () => apiRequest("/companies/officers", {}, "company"),
+  addOfficer:     (data) => apiRequest("/companies/officers", { method: "POST", body: JSON.stringify(data) }, "company"),
+  deleteOfficer:  (id) => apiRequest("/companies/officers/" + id, { method: "DELETE" }, "company"),
 
   // Officer auth
   officerLogin: (badge_id, password, company_id) => request("/auth/login", { method: "POST", body: JSON.stringify({ badge_id, password, company_id }) }),
