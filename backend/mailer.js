@@ -1,19 +1,26 @@
 require("dotenv").config();
 const nodemailer = require("nodemailer");
 
+const gmailUser = process.env.GMAIL_USER?.trim();
+const gmailPass = process.env.GMAIL_PASS?.replace(/\s/g, "");
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
+    user: gmailUser,
+    pass: gmailPass,
   },
 });
 
-const FROM = `"GateKeeper" <${process.env.GMAIL_USER}>`;
-const APP_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FROM = `"GateKeeper" <${gmailUser}>`;
+const configuredAppUrl = process.env.FRONTEND_URL?.trim() || "http://localhost:5173";
+const APP_URL = configuredAppUrl.replace(/^FRONTEND_URL=/i, "").replace(/\/$/, "");
 
 // ── Verify email on signup ────────────────────────────────────────────────────
 async function sendVerificationEmail(to, companyName, token) {
+  if (!gmailUser || !gmailPass) {
+    throw new Error("GMAIL_USER and GMAIL_PASS must be configured");
+  }
   const link = `${APP_URL}/company/verify?token=${token}`;
   await transporter.sendMail({
     from: FROM,
